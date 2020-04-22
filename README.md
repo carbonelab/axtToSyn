@@ -19,22 +19,26 @@ chmod +x axtToSyn.py
 ## Usage
 
 ```
-$ axtToSyn.py -h
-usage: axtToSyn [-h] file outfile [s] [l] t q
+$ ./axtToSyn.py -h
+usage: axtToSyn [-h] [--min-score [MIN_SCORE]] [--min-blen [MIN_BLEN]]
+                file outfile tname qname
 
 Generates synteny blocks from pairwise genome alignment .axt file by block
 elongation.
 
 positional arguments:
-  file        Relative path to net.axt alignment file.
-  outfile     Path to output synteny blocks file.
-  s           Min alignment score to be considered for elongation (defalt:
-              1e6)
-  l           Min block len to be considered for elongation in the first pass
-              (defalt: 2e5)
-  t           Target assembly, used to name breakpoints.
-  q           Query assembly, used to name breakpoints.
+  file                  Relative path to net.axt alignment file.
+  outfile               Path to output synteny blocks file (default:
+                        synblocks.csv)
+  tname                 Target assembly, used to name breakpoints.
+  qname                 Query assembly, used to name breakpoints.
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  --min-score [MIN_SCORE]
+                        Min alignment score of block to be considered for
+                        elongation (defalt: 1e5)
+  --min-blen [MIN_BLEN]
+                        Min block len to be considered for elongation in the
+                        first pass (defalt: 1e3)
 ``` 

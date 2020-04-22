@@ -23,28 +23,31 @@ def get_args():
                         help='Relative path to net.axt alignment file.',
                         type=str)
     parser.add_argument('outfile',
-                        help='Path to output synteny blocks file.',
+                        help='Path to output synteny blocks file \
+                              (default: synblocks.csv)',
                         type=str,
                         default="synblocks.csv")
-    parser.add_argument('s',
+    parser.add_argument('--min-score',
                         type=int,
-                        help='Min alignment score to be considered for\
-                                elongation (defalt: 1e6)',
+                        help='Min alignment score of block to be considered for\
+                                elongation (defalt: 1e5)',
                         default=1e5,
                         nargs='?'
                         )
-    parser.add_argument('l',
+    parser.add_argument('--min-blen',
                         type=int,
                         help='Min block len to be considered for\
-                                elongation in the first pass (defalt: 2e5)',
+                                elongation in the first pass (defalt: 1e3)',
                         default=1e3,
                         nargs='?')
-    parser.add_argument('t',
+    parser.add_argument('tname',
                         type=str,
-                        help='Target assembly, used to name breakpoints.')
-    parser.add_argument('q',
+                        help='Target assembly, used to name breakpoints.',
+                        )
+    parser.add_argument('qname',
                         type=str,
-                        help='Query assembly, used to name breakpoints.')
+                        help='Query assembly, used to name breakpoints.',
+                        )
     return parser.parse_args()
 
 
@@ -235,12 +238,12 @@ def main():
     # initiate first pass 
     infile = args.file
     outfile = args.outfile
-    min_len = args.l 
-    min_score = args.s
+    min_len = args.min_blen
+    min_score = args.min_score
 
     # assembly versions
-    target = args.t
-    query = args.q
+    target = args.tname
+    query = args.qname
 
     print(f"Using min alignment score {min_score}...")
     print(f"Using min block length {min_len}")
