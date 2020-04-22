@@ -41,10 +41,10 @@ def get_args():
                         nargs='?')
     parser.add_argument('t',
                         type=str,
-                        help='Target assembly')
+                        help='Target assembly, used to name breakpoints.')
     parser.add_argument('q',
                         type=str,
-                        help='Query assembly')
+                        help='Query assembly, used to name breakpoints.')
     return parser.parse_args()
 
 
@@ -173,7 +173,6 @@ def third_pass(second_pass):
             # append block and reset
             tp.append(t)
             t=sp
-    princ(tp) 
     return tp
 
 def write_breakpoints(tp, target, query, bpfile):
@@ -190,37 +189,40 @@ def write_breakpoints(tp, target, query, bpfile):
     # chunk list 
     bps=[]
     # breakpoint counter
-    nbps=1
+    nbps=0
     prev=""
     for l in tp:
 
         # target chromosome number
-        tchrom=l[3].replace("chr", "")
+        tchrom=l[0].replace("chr", "")
 
         # query chromosome number
-        qchrom=l[5].replace("chr", "")
+        qchrom=l[3].replace("chr", "")
+
+        # increment breakpoint number
+        nbps+=1
 
         # name ends up in fourth field of output breakpoints BED file
-        name=f"{target}_{tchrom}_{query}_{qchrom}_B{nbos}_"
+        name=f"{target}_{tchrom}_{query}_{qchrom}_"
+
+        # if it's the start of a new chrom
         if l[0] != chr:
-            side="L"
             prev=l
             chr=l[0]
-            l=[l[0],str(int(int(l[2])-bklen)),l[2],name+side,l[7],l[6]]
+            l=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",l[7],l[6]]
             bps.append(l)
-            nbos+=1
+
+        # otherwise in the same chrom
         elif l[0] == chr:
 
             # construct the right side breakpoint 
-            side="R"
-            a=[l[0],l[1],str(int(int(l[1])+bklen)),name+side,l[7],l[6]]
+            a=[l[0],l[1],str(int(int(l[1])+bklen)),name+f"B{nbps}_R",l[7],l[6]]
             bps.append(a)
+            nbps+=1
             
             # construct the left side breakpoint
-            side="L" 
-            b=[l[0],str(int(int(l[2])-bklen)),l[2],name+side,l[7],l[6]]
+            b=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",l[7],l[6]]
             bps.append(b)
-            nbos+=1
         else:
             continue
     write_outfile(bps, bpfile)
