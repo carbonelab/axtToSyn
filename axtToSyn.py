@@ -197,7 +197,6 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
     bps=[]
     # breakpoint counter
     nbps=0
-    prev=""
     for l in tp:
 
         # target chromosome number
@@ -214,10 +213,18 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
 
         # if it's the start of a new chrom
         if l[0] != chr:
-            prev=l
+            # remove blocks on chromosome ends
             chr=l[0]
             l=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",l[7],l[6]]
+            
+            # first remove the last if there is one
+            # this makes it so we don't count 
+            # chromosome ends as breakpoints
+            bps = bps[0:-1]
+
+            # then append next first breakpoint
             bps.append(l)
+            
 
         # otherwise in the same chrom
         elif l[0] == chr:
@@ -232,6 +239,7 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
             bps.append(b)
         else:
             continue
+
     write_outfile(bps, bpfile)
 
 def main():
@@ -271,9 +279,6 @@ def main():
     nsecond=len(sp)
     nthird=len(tp)
 
-    for t in tp: 
-        l = ' '.join(t)
-        print(l)
     print(f"{nfirst} synblocks after first pass\n{nsecond} synblocks after second pass\n{nthird} synblocks after third pass.")
 
 if __name__=="__main__":
