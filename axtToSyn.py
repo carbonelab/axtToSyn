@@ -237,7 +237,6 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
         else:
             continue
 
-    # handle any dups
     write_outfile(bps, bpfile)
 
 def main():
