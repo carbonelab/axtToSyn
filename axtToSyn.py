@@ -157,7 +157,6 @@ def second_pass(first_pass, min_len):
         else:
             # block reset 
             s=fp
-    print(sp[1:10])
     return sp
 
 
