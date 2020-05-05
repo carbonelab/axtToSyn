@@ -31,7 +31,7 @@ def get_args():
                         type=int,
                         help='Min alignment score of block to be considered for\
                                 elongation (defalt: 1e5)',
-                        default=1e5,
+                        default=2e5,
                         nargs='?'
                         )
     parser.add_argument('--min-blen',
@@ -40,6 +40,11 @@ def get_args():
                                 elongation in the first pass (defalt: 1e3)',
                         default=1e3,
                         nargs='?')
+    parser.add_argument('--break-len',
+                        type=int,
+                        help='Set the length of the synteny breakpoint regions that are output (default: 100bp).',
+                        default=1e2,
+                        nargs='?'),
     parser.add_argument('tname',
                         type=str,
                         help='Target assembly, used to name breakpoints.',
@@ -101,14 +106,14 @@ def first_pass(file, min_len, min_score):
     # look for blocks to elongate
     for l in axtFilter(file, min_score):
         # if adjacent blocks have chroms,strand same
-        if b[0]==l[0] and b[3]==l[3] and b[6]==l[6]:
+        if b[0]==l[0] and b[3]==l[3] and int(b[4])<int(l[4]) and b[6]==l[6]:
             # extend block in chromosome
             b[2]=l[2]
             b[5]=l[5]
             b[6]=l[6]
             inb+=1
         # only add bs greater than min_len
-        elif int(b[2])-int(b[1]) > min_len and inb > 1:
+        elif int(b[2])-int(b[1]) > min_len and inb > 2:
             # append a count that represents
             # the number of alignments
             # contributing to a block
@@ -137,7 +142,7 @@ def second_pass(first_pass, min_len):
     # start the first block of the second pass
     s = first_pass[0]
     for fp in first_pass:
-        if s[0]==fp[0] and s[3]==fp[3] and s[6]==fp[6]:
+        if s[0]==fp[0] and s[3]==fp[3] and int(s[4])<int(fp[4]) and s[6]==fp[6]:
             # elongate block
             s[2]=fp[2]
             s[5]=fp[5]
@@ -152,6 +157,7 @@ def second_pass(first_pass, min_len):
         else:
             # block reset 
             s=fp
+    print(sp[1:10])
     return sp
 
 
@@ -165,28 +171,26 @@ def third_pass(second_pass):
     tp=[]
     t=second_pass[0]
     for sp in second_pass:
-        if t[0]==sp[0] and t[3]==sp[3] and t[6]==sp[6]:
+        if t[0]==sp[0] and t[3]==sp[3] and int(t[4])<int(sp[4]) and t[6]==sp[6]:
             # target end coord
             t[2]=sp[2]
             # query end coord 
             t[5]=sp[5]
             # alignment counter 
             t[7]=str(int(t[7])+int(sp[7]))
+            tp.append(t)
         else:
             # append block and reset
-            tp.append(t)
             t=sp
+    print(tp[1:10])            
     return tp
 
-def write_breakpoints(tp, target, query, bpfile):
+def write_breakpoints(tp, target, query, bpfile, bklen):
     '''
     Takes the synteny blocks from the third pass
     and write a file that contains the breakpoint 
     regions.
     '''
-    # the length of the breakpoint 
-    # can be chosen arbitrarily
-    bklen = 1e4 
     # a list of breakpoint regions 
     chr=""
     # chunk list 
@@ -245,6 +249,8 @@ def main():
     target = args.tname
     query = args.qname
 
+    breakpoint_len = args.break_len
+
     print(f"Using min alignment score {min_score}...")
     print(f"Using min block length {min_len}")
 
@@ -258,7 +264,7 @@ def main():
 
     bkfile=outfile+".breakpoints.bed"
     # write breakpoints
-    write_breakpoints(tp, target, query, bkfile) 
+    write_breakpoints(tp, target, query, bkfile, breakpoint_len) 
 
     # log stats
     nfirst=len(fp)
