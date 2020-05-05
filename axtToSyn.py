@@ -178,11 +178,9 @@ def third_pass(second_pass):
             # alignment counter 
             t[7]=str(int(t[7])+int(sp[7]))
             tp.append(t)
-        else:
-            # append block and reset
-            t=sp
-    print(tp[1:10])            
-    return tp
+        # block reset 
+        t=sp
+    return tp 
 
 def write_breakpoints(tp, target, query, bpfile, bklen):
     '''
@@ -239,6 +237,7 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
         else:
             continue
 
+    # handle any dups
     write_outfile(bps, bpfile)
 
 def main():
