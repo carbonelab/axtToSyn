@@ -31,7 +31,7 @@ def get_args():
                         type=int,
                         help='Min alignment score of block to be considered for\
                                 elongation (defalt: 1e5)',
-                        default=2e5,
+                        default=1e5,
                         nargs='?'
                         )
     parser.add_argument('--min-blen',
@@ -42,8 +42,8 @@ def get_args():
                         nargs='?')
     parser.add_argument('--break-len',
                         type=int,
-                        help='Set the length of the synteny breakpoint regions that are output (default: 100bp).',
-                        default=1e2,
+                        help='Set the length of the synteny breakpoint regions that are output (default: 1000bp).',
+                        default=1e3,
                         nargs='?'),
     parser.add_argument('tname',
                         type=str,
@@ -151,7 +151,7 @@ def second_pass(first_pass, min_len):
 
         # at least three contributing blocks
         # len = min_len*500
-        elif int(s[7]) > 2 and int(s[2]) - int(s[1]) > min_len*500:
+        elif int(s[7]) > 2 and int(s[2]) - int(s[1]) > min_len*600:
             sp.append(s)
             s=fp
         else:
@@ -177,9 +177,10 @@ def third_pass(second_pass):
             t[5]=sp[5]
             # alignment counter 
             t[7]=str(int(t[7])+int(sp[7]))
-            tp.append(t)
         # block reset 
-        t=sp
+        else:   
+            t=sp
+            tp.append(t)
     return tp 
 
 def write_breakpoints(tp, target, query, bpfile, bklen):
@@ -193,7 +194,7 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
     # chunk list 
     bps=[]
     # breakpoint counter
-    nbps=0
+    nbps=1
     for l in tp:
 
         # target chromosome number
@@ -202,9 +203,6 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
         # query chromosome number
         qchrom=l[3].replace("chr", "")
 
-        # increment breakpoint number
-        nbps+=1
-
         # name ends up in fourth field of output breakpoints BED file
         name=f"{target}_{tchrom}_{query}_{qchrom}_"
 
@@ -212,7 +210,7 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
         if l[0] != chr:
             # remove blocks on chromosome ends
             chr=l[0]
-            l=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",l[7],l[6]]
+            l=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",str(int(int(l[7])/100)),l[6]]
             
             # first remove the last if there is one
             # this makes it so we don't count 
@@ -221,18 +219,17 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
 
             # then append next first breakpoint
             bps.append(l)
-            
 
         # otherwise in the same chrom
         elif l[0] == chr:
 
             # construct the right side breakpoint 
-            a=[l[0],l[1],str(int(int(l[1])+bklen)),name+f"B{nbps}_R",l[7],l[6]]
+            a=[l[0],l[1],str(int(int(l[1])+bklen)),name+f"B{nbps}_R",str(int(int(l[7])/100)),l[6]]
             bps.append(a)
-            nbps+=1
             
+            nbps+=1
             # construct the left side breakpoint
-            b=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",l[7],l[6]]
+            b=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",str(int(int(l[7])/100)),l[6]]
             bps.append(b)
         else:
             continue
