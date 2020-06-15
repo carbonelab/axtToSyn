@@ -61,22 +61,23 @@ def axtFilter(file, min_score):
     Generates alignment fields with
     min_score from .axt alignment file.
     '''
-    fi=file
+    fi = file
     with open(fi, 'r') as f:
         for l in f:
-            l=l.strip().split(" ")
+            l = l.strip().split(" ")
             # skip lines without len 9
             if len(l) != 9:
                 continue
-            # skip score less than min_score 
+            # skip score less than min_score
             elif int(l[8]) < min_score:
                 continue
             else:
                 yield(l[1:8])
 
+
 def write_outfile(syn, outname):
     '''
-    Write the result of the last pass 
+    Write the result of the last pass
     to a space delimeted output file
     '''
     with open(outname, 'w') as of:
@@ -84,34 +85,35 @@ def write_outfile(syn, outname):
             of.write("\t".join(b))
             of.write("\n")
 
+
 def first_pass(file, min_len, min_score):
     '''
     Make a first pass at elongation of alignment
     blocks from the .axt file. Only keep adjacent blocks
-    that have the same target and query genomes and 
-    strand. This allows for detection of inversion 
+    that have the same target and query genomes and
+    strand. This allows for detection of inversion
     breakpoints.
     '''
     # block storage for the first pass
-    fp=[]
+    fp = []
     # start the first block on the first line
     print("Elongating the synblocks on first pass...")
 
     # iterate the alignment generator
-    b=next(axtFilter(file, min_score))
+    b = next(axtFilter(file, min_score))
 
     # init alignment counter
-    inb=0
-    
+    inb = 0
+ 
     # look for blocks to elongate
     for l in axtFilter(file, min_score):
         # if adjacent blocks have chroms,strand same
-        if b[0]==l[0] and b[3]==l[3] and int(b[4])<int(l[4]) and b[6]==l[6]:
+        if b[0] == l[0] and b[3] == l[3] and int(b[4]) < int(l[4]) and b[6] == l[6]:
             # extend block in chromosome
-            b[2]=l[2]
-            b[5]=l[5]
-            b[6]=l[6]
-            inb+=1
+            b[2] = l[2]
+            b[5] = l[5]
+            b[6] = l[6]
+            inb += 1
         # only add bs greater than min_len
         elif int(b[2])-int(b[1]) > min_len and inb > 2:
             # append a count that represents
