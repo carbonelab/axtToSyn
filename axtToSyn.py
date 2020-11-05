@@ -191,50 +191,46 @@ def write_breakpoints(tp, target, query, bpfile, bklen):
     and write a file that contains the breakpoint 
     regions.
     '''
-    # a list of breakpoint regions 
     chr=""
     # chunk list 
     bps=[]
     # breakpoint counter
     nbps=1
-    for l in tp:
 
-        # target chromosome number
-        tchrom=l[0].replace("chr", "")
+    for i in range(len(tp)):
 
-        # query chromosome number
-        qchrom=l[3].replace("chr", "")
-
-        # name ends up in fourth field of output breakpoints BED file
-        name=f"{target}_{tchrom}_{query}_{qchrom}_"
-
-        # if it's the start of a new chrom
-        if l[0] != chr:
-            # remove blocks on chromosome ends
-            chr=l[0]
-            l=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",str(int(int(l[7])/100)),l[6]]
-            
-            # first remove the last if there is one
-            # this makes it so we don't count 
-            # chromosome ends as breakpoints
-            bps = bps[0:-1]
-
-            # then append next first breakpoint
-            bps.append(l)
-
-        # otherwise in the same chrom
-        elif l[0] == chr:
-
-            # construct the right side breakpoint 
-            a=[l[0],l[1],str(int(int(l[1])+bklen)),name+f"B{nbps}_R",str(int(int(l[7])/100)),l[6]]
-            bps.append(a)
-            
-            nbps+=1
-            # construct the left side breakpoint
-            b=[l[0],str(int(int(l[2])-bklen)),l[2],name+f"B{nbps}_L",str(int(int(l[7])/100)),l[6]]
-            bps.append(b)
+        tb=tp[i]
+        if i+1<len(tp):
+            nb=tp[i+1]
         else:
             continue
+
+        if tb==nb:
+           continue 
+
+        if tb[0] == nb[0]:
+            # chrom or strand changes
+            if tb[3] != nb[3] or tb[6] != nb[6]:
+            
+                # left breakpoint name
+                ttchrom=tb[0].replace("chr", "")
+                tqchrom=tb[3].replace("chr", "")
+                ttname=f"{target}_{ttchrom}_{query}_{tqchrom}_"
+
+                # right breakpoint name
+                ntchrom=nb[0].replace("chr", "") 
+                nqchrom=nb[3].replace("chr", "")
+                ntname=f"{target}_{ntchrom}_{query}_{nqchrom}_"
+
+                # construct the right and left side breakpoints
+                lb=[tb[0],str(int(int(tb[2])-bklen)),tb[2],ttname+f"B{nbps}_L",str(int(int(tb[7])/100)),tb[6]]
+                rb=[nb[0],nb[1],str(int(int(nb[1])+bklen)),ntname+f"B{nbps}_R",str(int(int(nb[7])/100)),nb[6]]
+            
+                if not lb in bps:
+                    bps.append(lb)
+                if not rb in bps:
+                    bps.append(rb)
+                nbps+=1
 
     write_outfile(bps, bpfile)
 
