@@ -2,7 +2,7 @@
 
 Detect synteny blocks and synteny breakpoints from pairwise genome alignment file.
 
-axtToSyn.py is a python script that performs synteny block detection using a pairwise genome alignment file output by the UCSC pairwise genome alignment pipeline. 
+axtToSyn.py is a python script that performs synteny block detection using a pairwise genome alignment fileq (.axt format) output by the UCSC pairwise genome alignment pipeline our [lastz-pipeline](https://github.com/carbonelab/lastz-pipeline). 
 
 ## Install
 
@@ -41,4 +41,11 @@ optional arguments:
   --min-blen [MIN_BLEN]
                         Min block len to be considered for elongation in the
                         first pass (defalt: 1e3)
-``` 
+```
+
+We recommend using the defaults unless you want to experiment with parameter tweaking, so for example to generate synteny blocks from the axt file example in [hg38.rheMac10.net.axt](https://github.com/carbonelab/lastz-pipeline), you can use a command like the following:
+
+```
+python axtToSyn.py hg38.rheMac10.net.axt hg38.rheMac10.synteny.csv hg38 rheMac10
+```
+
